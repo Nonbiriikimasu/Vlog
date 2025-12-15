@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Vlog Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF3B30; /* YouTube/Video Red */
+            --bg-body: #f9f9f9;
+            --bg-card: #ffffff;
+            --text-main: #1d1d1f;
+            --text-sub: #86868b;
+            --border: #d2d2d7;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --accent-bg: #fff1f0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        h1 {
+            font-size: 1.5rem; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .subtitle { color: var(--text-sub); font-size: 0.9rem; margin-top: 5px; }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: flex; justify-content: space-between;
+            font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; color: var(--text-sub);
+        }
+        .help-link { color: var(--primary); text-decoration: none; font-size: 0.8rem; }
+
+        input, textarea, select {
+            width: 100%; padding: 14px;
+            border: 1px solid var(--border); border-radius: 10px;
+            font-size: 1rem; box-sizing: border-box;
+            background: #fff; color: var(--text-main);
+            transition: all 0.2s;
+            appearance: none;
+        }
+        input:focus, textarea:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+        }
+
+        .btn-main {
+            width: 100%; padding: 14px;
+            background-color: #1d1d1f; color: #fff;
+            border: none; border-radius: 50px;
+            font-size: 1rem; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: transform 0.1s;
+        }
+        .btn-main:hover { opacity: 0.9; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-main:disabled { background-color: #d2d2d7; cursor: not-allowed; }
+
+        /* Loader */
+        .loader {
+            width: 18px; height: 18px; border: 2px solid #fff;
+            border-top-color: transparent; border-radius: 50%;
+            animation: spin 1s linear infinite; display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Result Area */
+        .result-area { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .title-box {
+            text-align: center; margin-bottom: 20px;
+        }
+        .video-title {
+            font-size: 1.2rem; font-weight: bold; margin-bottom: 5px;
+        }
+
+        /* Timeline Style */
+        .timeline { position: relative; padding-left: 20px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 7px; top: 15px; bottom: 15px;
+            width: 2px; background: #e5e5e5;
+        }
+        .timeline-item { position: relative; margin-bottom: 16px; }
+        
+        /* シーン別アイコン色分け */
+        .dot {
+            position: absolute; left: -19px; top: 20px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #fff; border: 4px solid #86868b; z-index: 2;
+        }
+        .type-Main .dot { border-color: #FF3B30; } /* Main: Red */
+        .type-B-roll .dot { border-color: #34C759; } /* B-roll: Green */
+        .type-Move .dot { border-color: #007AFF; } /* Move: Blue */
+
+        .item-header {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; position: relative; z-index: 1;
+        }
+        .item-header:hover { background: #f5f5f7; }
+
+        .header-content { display: flex; flex-direction: column; flex: 1; }
+        .scene-type {
+            font-size: 0.75rem; font-weight: bold; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px;
+        }
+        .scene-title { font-weight: bold; font-size: 1rem; }
+
+        .toggle-icon { color: var(--text-sub); transition: transform 0.3s; }
+        .timeline-item.active .toggle-icon { transform: rotate(180deg); }
+
+        .item-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-left: 4px; }
+        .body-inner {
+            background: #fafafa; border: 1px solid var(--border); border-top: none;
+            border-radius: 0 0 12px 12px; padding: 20px; margin-top: -8px; padding-top: 15px;
+        }
+
+        /* Advice Box */
+        .advice-box {
+            margin-bottom: 12px; font-size: 0.9rem;
+        }
+        .advice-label {
+            font-weight: bold; font-size: 0.8rem; color: var(--text-sub); display: flex; align-items: center; gap: 4px;
+        }
+        .advice-text { margin-top: 4px; color: var(--text-main); }
+
+        .b-roll-tag {
+            background: #eaffea; color: #248a3d; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; border: 1px solid #c3e6cb;
+            display: inline-block; margin-top: 5px;
+        }
+
+        .map-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: bold;
+            margin-top: 10px;
+        }
+        .map-btn:hover { text-decoration: underline; }
+
+        .error-msg {
+            background: #fff2f2; color: #d93025; padding: 12px;
+            border-radius: 8px; margin-top: 15px; display: none; font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>
+            <span class="material-icons-round" style="color:var(--primary);">videocam</span>
+            AI Vlog Plotter
+        </h1>
+        <div class="subtitle">撮影すべき「画」がわかる構成作成アプリ</div>
+    </header>
+
+    <div class="card">
+        <div class="form-group">
+            <label>
+                Google API Key
+                <a href="help.html" target="_blank" class="help-link">取得方法はこちら</a>
+            </label>
+            <input type="password" id="apiKey" placeholder="Alza...">
+        </div>
+
+        <div class="form-group">
+            <label>目的地 (必須)</label>
+            <input type="text" id="destination" placeholder="例: 京都 嵐山">
+        </div>
+
+        <div class="form-group">
+            <label>出発地 (任意)</label>
+            <input type="text" id="departure" placeholder="例: 東京駅 (移動シーンも提案します)">
+        </div>
+
+        <div class="form-group">
+            <label>動画のテーマ・雰囲気</label>
+            <textarea id="theme" rows="2" placeholder="例: シネマティックに撮りたい、食べ歩きメイン、カップル旅行風..."></textarea>
+        </div>
+
+        <button id="generateBtn" class="btn-main" onclick="generateVlogPlan()">
+            <span id="btnText">構成案を作成</span>
+            <div class="loader" id="loader"></div>
+        </button>
+        <div id="errorMsg" class="error-msg"></div>
+    </div>
+
+    <div id="resultArea" class="result-area">
+        <div class="card title-box">
+            <div style="font-size:0.8rem; color:#888;">AI提案タイトル</div>
+            <div class="video-title" id="videoTitle"></div>
+            <div id="videoConcept" style="font-size:0.9rem;"></div>
+        </div>
+
+        <div class="timeline" id="timelineContainer"></div>
+    </div>
+</div>
+
+<script>
+    // Geminiモデル自動選択ロジック
+    async function findWorkingModel(apiKey) {
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            const models = data.models || [];
+            // Flash -> Pro -> 他 の順で探す
+            const validModel = models.find(m => m.name.includes("flash")) 
+                            || models.find(m => m.name.includes("pro"))
+                            || models.find(m => m.supportedGenerationMethods.includes("generateContent"));
+            return validModel ? validModel.name.replace('models/', '') : "gemini-1.5-flash";
+        } catch (e) {
+            return "gemini-1.5-flash"; // デフォルト
+        }
+    }
+
+    async function generateVlogPlan() {
+        const btn = document.getElementById('generateBtn');
+        const loader = document.getElementById('loader');
+        const btnText = document.getElementById('btnText');
+        const errorMsg = document.getElementById('errorMsg');
+        const resultArea = document.getElementById('resultArea');
+
+        // Reset
+        btn.disabled = true;
+        btnText.innerText = "構成を考案中...";
+        loader.style.display = 'block';
+        errorMsg.style.display = 'none';
+        resultArea.style.display = 'none';
+
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const dest = document.getElementById('destination').value;
+        const dep = document.getElementById('departure').value || "なし";
+        const theme = document.getElementById('theme').value || "Vlog";
+
+        if (!apiKey) {
+            showError("APIキーを入力してください");
+            return;
+        }
+        if (!dest) {
+            showError("目的地を入力してください");
+            return;
+        }
+
+        try {
+            const modelName = await findWorkingModel(apiKey);
+            
+            const systemPrompt = `
+あなたはプロの映像クリエイター兼Vlog構成作家です。
+ユーザーの旅行計画に基づいて、魅力的なVlog（ビデオブログ）の構成案を作成してください。
+
+【タスク】
+単なる旅行日程ではなく、「動画としてどこをどう撮れば面白いか」を提案してください。
+移動中や場所の変わり目には「Bロール（インサートカット）」や「トランジション」のアイデアも入れてください。
+
+【出力フォーマット】
+以下のJSON形式のみを出力してください（Markdown記法は不要）。
+
+{
+  "video_title": "YouTube映えするキャッチーなタイトル案",
+  "concept": "この動画のテーマを一言で",
+  "scenes": [
+    {
+      "type": "Opening" | "Move" | "Main" | "Food" | "B-roll" | "Ending",
+      "location": "場所名 (GoogleMap検索用)",
+      "action": "何をしているシーンか (例: カフェに入店、駅のホームで自撮り)",
+      "camera_advice": "撮影テクニック (例: 足元のアップからパンアップ、GoProで広角、スローモーションで)",
+      "b_roll_idea": "ここで撮っておくべきインサート素材 (例: 看板のアップ、流れる雲、切符を持つ手)",
+      "narration_hint": "ここで何を話すか、テロップのアイデア"
+    }
+  ]
+}`;
+
+            const userPrompt = `
+目的地: ${dest}
+出発地: ${dep}
+動画の雰囲気: ${theme}
+
+構成はオープニングからエンディングまで、時系列で作成してください。
+`;
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n" + userPrompt }] }] })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || "エラーが発生しました");
+            }
+
+            const data = await response.json();
+            const text = data.candidates[0].content.parts[0].text;
+            const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const planData = JSON.parse(cleanJson);
+
+            renderVlogPlan(planData);
+
+        } catch (e) {
+            console.error(e);
+            showError(`エラー: ${e.message}`);
+        } finally {
+            btn.disabled = false;
+            btnText.innerText = "構成案を作成";
+            loader.style.display = 'none';
+        }
+    }
+
+    function renderVlogPlan(data) {
+        document.getElementById('videoTitle').textContent = data.video_title;
+        document.getElementById('videoConcept').textContent = data.concept;
+
+        const container = document.getElementById('timelineContainer');
+        container.innerHTML = '';
+
+        data.scenes.forEach(scene => {
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(scene.location)}`;
+            
+            // シーンタイプごとのラベル
+            let typeLabel = scene.type;
+            if (scene.type === 'Move') typeLabel = '🚗 移動・トランジション';
+            if (scene.type === 'B-roll') typeLabel = '🎥 インサート撮影 (Bロール)';
+            if (scene.type === 'Main') typeLabel = '📍 メインスポット';
+            if (scene.type === 'Food') typeLabel = '🍽 グルメ';
+
+            const html = `
+                <div class="timeline-item type-${scene.type}">
+                    <div class="dot"></div>
+                    
+                    <div class="item-header" onclick="toggleItem(this)">
+                        <div class="header-content">
+                            <span class="scene-type">${typeLabel}</span>
+                            <span class="scene-title">${scene.action}</span>
+                        </div>
+                        <span class="material-icons-round toggle-icon">expand_more</span>
+                    </div>
+
+                    <div class="item-body">
+                        <div class="body-inner">
+                            <div class="advice-box">
+                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">videocam</span> 撮り方アドバイス</div>
+                                <div class="advice-text">${scene.camera_advice}</div>
+                            </div>
+                            
+                            ${scene.b_roll_idea ? `
+                            <div class="advice-box">
+                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">collections</span> Bロールのアイデア</div>
+                                <div class="b-roll-tag">${scene.b_roll_idea}</div>
+                            </div>` : ''}
+
+                            <div class="advice-box">
+                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">mic</span> トーク / テロップ</div>
+                                <div class="advice-text" style="color:#666;">"${scene.narration_hint}"</div>
+                            </div>
+
+                            ${scene.location ? `
+                            <a href="${mapUrl}" target="_blank" class="map-btn">
+                                <span class="material-icons-round" style="font-size:16px">place</span> ${scene.location}
+                            </a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+        document.getElementById('resultArea').style.display = 'block';
+    }
+
+    function toggleItem(header) {
+        const item = header.parentElement;
+        const body = item.querySelector('.item-body');
+        item.classList.toggle('active');
+        if (item.classList.contains('active')) {
+            body.style.maxHeight = body.scrollHeight + "px";
+        } else {
+            body.style.maxHeight = null;
+        }
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('errorMsg');
+        el.innerText = msg;
+        el.style.display = 'block';
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('btnText').innerText = "構成案を作成";
+        document.getElementById('loader').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
