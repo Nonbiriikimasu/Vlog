@@ -4,165 +4,245 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Vlog Planner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         :root {
-            --primary: #FF3B30; /* YouTube/Video Red */
-            --bg-body: #f9f9f9;
+            /* カラーパレット */
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* モダンな青紫グラデ */
+            --primary-color: #667eea;
+            --accent-color: #fca5a5; /* 柔らかい赤（録画ボタンのイメージ） */
+            --bg-body: #f4f7f6;
             --bg-card: #ffffff;
-            --text-main: #1d1d1f;
-            --text-sub: #86868b;
-            --border: #d2d2d7;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --accent-bg: #fff1f0;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --border: #e2e8f0;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+            --radius-l: 24px;
+            --radius-m: 16px;
+            --radius-s: 12px;
         }
 
         body {
-            font-family: 'Noto Sans JP', sans-serif;
+            font-family: 'Poppins', 'Noto Sans JP', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
             padding: 40px 20px;
-            line-height: 1.6;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 680px;
             margin: 0 auto;
         }
 
-        header { text-align: center; margin-bottom: 30px; }
-        h1 {
-            font-size: 1.5rem; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+        /* ヘッダー */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
         }
-        .subtitle { color: var(--text-sub); font-size: 0.9rem; margin-top: 5px; }
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+        }
+        .subtitle {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            margin-top: 8px;
+            font-weight: 400;
+        }
 
+        /* カードデザイン */
         .card {
             background-color: var(--bg-card);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: var(--radius-l);
+            box-shadow: var(--shadow-soft);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid #fff;
         }
 
-        .form-group { margin-bottom: 20px; }
+        /* フォーム要素 */
+        .form-group { margin-bottom: 24px; }
+        
         label {
-            display: flex; justify-content: space-between;
-            font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; color: var(--text-sub);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.85rem; font-weight: 600;
+            margin-bottom: 10px; color: var(--text-sub);
+            letter-spacing: 0.03em;
         }
-        .help-link { color: var(--primary); text-decoration: none; font-size: 0.8rem; }
+        
+        .help-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            background: #eff6ff;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .help-link:hover { background: #dbeafe; }
 
         input, textarea, select {
-            width: 100%; padding: 14px;
-            border: 1px solid var(--border); border-radius: 10px;
+            width: 100%; padding: 16px;
+            border: 2px solid #edf2f7; border-radius: var(--radius-m);
             font-size: 1rem; box-sizing: border-box;
-            background: #fff; color: var(--text-main);
-            transition: all 0.2s;
-            appearance: none;
+            background: #f8fafc; color: var(--text-main);
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
+        
+        input::placeholder, textarea::placeholder { color: #cbd5e0; }
+
         input:focus, textarea:focus {
-            outline: none; border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+            outline: none;
+            border-color: var(--primary-color);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
+        /* ボタン */
         .btn-main {
-            width: 100%; padding: 14px;
-            background-color: #1d1d1f; color: #fff;
-            border: none; border-radius: 50px;
-            font-size: 1rem; font-weight: bold; cursor: pointer;
+            width: 100%; padding: 18px;
+            background: var(--primary-gradient);
+            color: #fff; border: none;
+            border-radius: 50px;
+            font-size: 1.1rem; font-weight: 600;
+            cursor: pointer;
             display: flex; justify-content: center; align-items: center; gap: 10px;
-            transition: transform 0.1s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
         }
-        .btn-main:hover { opacity: 0.9; }
-        .btn-main:active { transform: scale(0.98); }
-        .btn-main:disabled { background-color: #d2d2d7; cursor: not-allowed; }
+        .btn-main:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(118, 75, 162, 0.4);
+        }
+        .btn-main:active { transform: translateY(0); }
+        .btn-main:disabled {
+            background: #cbd5e0; cursor: not-allowed;
+            transform: none; box-shadow: none;
+        }
 
-        /* Loader */
+        /* ローダー */
         .loader {
-            width: 18px; height: 18px; border: 2px solid #fff;
-            border-top-color: transparent; border-radius: 50%;
-            animation: spin 1s linear infinite; display: none;
+            width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.8s linear infinite; display: none;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Result Area */
-        .result-area { display: none; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* 結果エリア */
+        .result-area { display: none; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .title-box {
-            text-align: center; margin-bottom: 20px;
+            text-align: center; margin-bottom: 40px;
+        }
+        .video-label {
+            font-size: 0.75rem; font-weight: 700; color: var(--primary-color);
+            text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
         }
         .video-title {
-            font-size: 1.2rem; font-weight: bold; margin-bottom: 5px;
+            font-size: 1.5rem; font-weight: 700; margin-bottom: 12px;
+            background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+        #videoConcept { color: var(--text-sub); font-size: 0.95rem; }
 
-        /* Timeline Style */
-        .timeline { position: relative; padding-left: 20px; }
+        /* タイムライン */
+        .timeline { position: relative; padding-left: 28px; }
         .timeline::before {
-            content: ''; position: absolute; left: 7px; top: 15px; bottom: 15px;
-            width: 2px; background: #e5e5e5;
+            content: ''; position: absolute; left: 9px; top: 20px; bottom: 20px;
+            width: 2px; background: #edf2f7;
         }
-        .timeline-item { position: relative; margin-bottom: 16px; }
-        
-        /* シーン別アイコン色分け */
-        .dot {
-            position: absolute; left: -19px; top: 20px;
-            width: 12px; height: 12px; border-radius: 50%;
-            background: #fff; border: 4px solid #86868b; z-index: 2;
-        }
-        .type-Main .dot { border-color: #FF3B30; } /* Main: Red */
-        .type-B-roll .dot { border-color: #34C759; } /* B-roll: Green */
-        .type-Move .dot { border-color: #007AFF; } /* Move: Blue */
 
+        .timeline-item { position: relative; margin-bottom: 24px; }
+        
+        /* ドット装飾 */
+        .dot {
+            position: absolute; left: -28px; top: 24px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #fff; border: 4px solid #cbd5e0; z-index: 2;
+            transition: all 0.3s;
+        }
+        .type-Main .dot { border-color: #ef4444; } /* 赤 */
+        .type-B-roll .dot { border-color: #10b981; } /* 緑 */
+        .type-Move .dot { border-color: #3b82f6; } /* 青 */
+        .type-Food .dot { border-color: #f59e0b; } /* 黄 */
+
+        /* アイテムヘッダー */
         .item-header {
-            background: #fff; border: 1px solid var(--border);
-            border-radius: 12px; padding: 16px;
+            background: #fff; border: 1px solid #edf2f7;
+            border-radius: var(--radius-m); padding: 20px;
             display: flex; justify-content: space-between; align-items: center;
             cursor: pointer; position: relative; z-index: 1;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
-        .item-header:hover { background: #f5f5f7; }
+        .item-header:hover {
+            transform: translateX(4px);
+            border-color: #cbd5e0;
+        }
 
         .header-content { display: flex; flex-direction: column; flex: 1; }
-        .scene-type {
-            font-size: 0.75rem; font-weight: bold; text-transform: uppercase; color: var(--text-sub); margin-bottom: 4px;
+        
+        .scene-type-badge {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em;
+            display: inline-block; padding: 4px 8px; border-radius: 6px;
+            margin-bottom: 6px; width: fit-content;
         }
-        .scene-title { font-weight: bold; font-size: 1rem; }
+        .badge-Main { background: #fee2e2; color: #ef4444; }
+        .badge-B-roll { background: #d1fae5; color: #10b981; }
+        .badge-Move { background: #dbeafe; color: #3b82f6; }
+        .badge-Food { background: #fef3c7; color: #d97706; }
+        .badge-Opening, .badge-Ending { background: #f3f4f6; color: #4b5563; }
 
-        .toggle-icon { color: var(--text-sub); transition: transform 0.3s; }
-        .timeline-item.active .toggle-icon { transform: rotate(180deg); }
+        .scene-title { font-weight: 700; font-size: 1.05rem; color: var(--text-main); }
 
-        .item-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-left: 4px; }
+        .toggle-icon { color: #cbd5e0; transition: transform 0.3s; }
+        .timeline-item.active .toggle-icon { transform: rotate(180deg); color: var(--primary-color); }
+
+        /* アイテム詳細 */
+        .item-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding-left: 8px; }
         .body-inner {
-            background: #fafafa; border: 1px solid var(--border); border-top: none;
-            border-radius: 0 0 12px 12px; padding: 20px; margin-top: -8px; padding-top: 15px;
+            background: #f8fafc; border: 1px solid #edf2f7; border-top: none;
+            border-radius: 0 0 16px 16px; padding: 24px; margin-top: -10px; padding-top: 20px;
         }
 
-        /* Advice Box */
-        .advice-box {
-            margin-bottom: 12px; font-size: 0.9rem;
-        }
+        .advice-group { margin-bottom: 16px; }
         .advice-label {
-            font-weight: bold; font-size: 0.8rem; color: var(--text-sub); display: flex; align-items: center; gap: 4px;
+            font-size: 0.75rem; font-weight: 700; color: var(--text-sub);
+            margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+            text-transform: uppercase;
         }
-        .advice-text { margin-top: 4px; color: var(--text-main); }
+        .advice-text { font-size: 0.95rem; color: #4a5568; line-height: 1.6; }
 
-        .b-roll-tag {
-            background: #eaffea; color: #248a3d; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; border: 1px solid #c3e6cb;
-            display: inline-block; margin-top: 5px;
+        .b-roll-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #fff; border: 1px solid #d1fae5; color: #059669;
+            padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 500;
+            margin-top: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .map-btn {
-            display: inline-flex; align-items: center; gap: 5px;
-            color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: bold;
-            margin-top: 10px;
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--primary-color); text-decoration: none; font-size: 0.9rem; font-weight: 600;
+            margin-top: 12px; padding: 8px 0;
+            transition: opacity 0.2s;
         }
-        .map-btn:hover { text-decoration: underline; }
+        .map-btn:hover { opacity: 0.7; }
 
         .error-msg {
-            background: #fff2f2; color: #d93025; padding: 12px;
-            border-radius: 8px; margin-top: 15px; display: none; font-size: 0.9rem;
+            background: #fee2e2; color: #ef4444; padding: 16px;
+            border-radius: var(--radius-s); margin-top: 20px; display: none; font-size: 0.9rem; font-weight: 500;
         }
     </style>
 </head>
@@ -171,48 +251,48 @@
 <div class="container">
     <header>
         <h1>
-            <span class="material-icons-round" style="color:var(--primary);">videocam</span>
+            <span class="material-icons-round" style="font-size: 36px; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">videocam</span>
             AI Vlog Plotter
         </h1>
-        <div class="subtitle">撮影すべき「画」がわかる構成作成アプリ</div>
+        <div class="subtitle">Creator's AI Assistant</div>
     </header>
 
     <div class="card">
         <div class="form-group">
             <label>
-                Google API Key
-                <a href="help.html" target="_blank" class="help-link">取得方法はこちら</a>
+                API Key
+                <a href="help.html" target="_blank" class="help-link">Help</a>
             </label>
-            <input type="password" id="apiKey" placeholder="Alza...">
+            <input type="password" id="apiKey" placeholder="Google Gemini API Key (Alza...)">
         </div>
 
         <div class="form-group">
-            <label>目的地 (必須)</label>
-            <input type="text" id="destination" placeholder="例: 京都 嵐山">
+            <label>SHOOTING LOCATION</label>
+            <input type="text" id="destination" placeholder="目的地 (例: 京都 嵐山)">
         </div>
 
         <div class="form-group">
-            <label>出発地 (任意)</label>
-            <input type="text" id="departure" placeholder="例: 東京駅 (移動シーンも提案します)">
+            <label>START POINT (Optional)</label>
+            <input type="text" id="departure" placeholder="出発地 (例: 東京駅)">
         </div>
 
         <div class="form-group">
-            <label>動画のテーマ・雰囲気</label>
-            <textarea id="theme" rows="2" placeholder="例: シネマティックに撮りたい、食べ歩きメイン、カップル旅行風..."></textarea>
+            <label>VIBE & THEME</label>
+            <textarea id="theme" rows="2" placeholder="URLの代わりに雰囲気を言葉で (例: シネマティック、手持ちカメラでラフに、彩度高めでポップに...)"></textarea>
         </div>
 
         <button id="generateBtn" class="btn-main" onclick="generateVlogPlan()">
-            <span id="btnText">構成案を作成</span>
+            <span id="btnText">CREATE PLOT</span>
             <div class="loader" id="loader"></div>
         </button>
         <div id="errorMsg" class="error-msg"></div>
     </div>
 
     <div id="resultArea" class="result-area">
-        <div class="card title-box">
-            <div style="font-size:0.8rem; color:#888;">AI提案タイトル</div>
+        <div class="title-box">
+            <div class="video-label">Suggested Title</div>
             <div class="video-title" id="videoTitle"></div>
-            <div id="videoConcept" style="font-size:0.9rem;"></div>
+            <div id="videoConcept"></div>
         </div>
 
         <div class="timeline" id="timelineContainer"></div>
@@ -220,20 +300,20 @@
 </div>
 
 <script>
-    // Geminiモデル自動選択ロジック
+    // モデル自動選択
     async function findWorkingModel(apiKey) {
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
             const models = data.models || [];
-            // Flash -> Pro -> 他 の順で探す
+            
             const validModel = models.find(m => m.name.includes("flash")) 
                             || models.find(m => m.name.includes("pro"))
                             || models.find(m => m.supportedGenerationMethods.includes("generateContent"));
             return validModel ? validModel.name.replace('models/', '') : "gemini-1.5-flash";
         } catch (e) {
-            return "gemini-1.5-flash"; // デフォルト
+            return "gemini-1.5-flash";
         }
     }
 
@@ -244,9 +324,8 @@
         const errorMsg = document.getElementById('errorMsg');
         const resultArea = document.getElementById('resultArea');
 
-        // Reset
         btn.disabled = true;
-        btnText.innerText = "構成を考案中...";
+        btnText.innerText = "PLANNING...";
         loader.style.display = 'block';
         errorMsg.style.display = 'none';
         resultArea.style.display = 'none';
@@ -257,11 +336,11 @@
         const theme = document.getElementById('theme').value || "Vlog";
 
         if (!apiKey) {
-            showError("APIキーを入力してください");
+            showError("APIキーが入力されていません");
             return;
         }
         if (!dest) {
-            showError("目的地を入力してください");
+            showError("目的地は必須です");
             return;
         }
 
@@ -326,7 +405,7 @@
             showError(`エラー: ${e.message}`);
         } finally {
             btn.disabled = false;
-            btnText.innerText = "構成案を作成";
+            btnText.innerText = "CREATE PLOT";
             loader.style.display = 'none';
         }
     }
@@ -341,12 +420,13 @@
         data.scenes.forEach(scene => {
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(scene.location)}`;
             
-            // シーンタイプごとのラベル
+            // ラベル変換
             let typeLabel = scene.type;
-            if (scene.type === 'Move') typeLabel = '🚗 移動・トランジション';
-            if (scene.type === 'B-roll') typeLabel = '🎥 インサート撮影 (Bロール)';
-            if (scene.type === 'Main') typeLabel = '📍 メインスポット';
-            if (scene.type === 'Food') typeLabel = '🍽 グルメ';
+            let badgeClass = `badge-${scene.type}`;
+            if (scene.type === 'Move') typeLabel = 'Move / Transition';
+            if (scene.type === 'B-roll') typeLabel = 'Cinematic B-roll';
+            if (scene.type === 'Main') typeLabel = 'Main Spot';
+            if (scene.type === 'Food') typeLabel = 'Gourmet';
 
             const html = `
                 <div class="timeline-item type-${scene.type}">
@@ -354,7 +434,7 @@
                     
                     <div class="item-header" onclick="toggleItem(this)">
                         <div class="header-content">
-                            <span class="scene-type">${typeLabel}</span>
+                            <span class="scene-type-badge ${badgeClass}">${typeLabel}</span>
                             <span class="scene-title">${scene.action}</span>
                         </div>
                         <span class="material-icons-round toggle-icon">expand_more</span>
@@ -362,25 +442,25 @@
 
                     <div class="item-body">
                         <div class="body-inner">
-                            <div class="advice-box">
-                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">videocam</span> 撮り方アドバイス</div>
+                            <div class="advice-group">
+                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">videocam</span> SHOOTING TIP</div>
                                 <div class="advice-text">${scene.camera_advice}</div>
                             </div>
                             
                             ${scene.b_roll_idea ? `
-                            <div class="advice-box">
-                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">collections</span> Bロールのアイデア</div>
-                                <div class="b-roll-tag">${scene.b_roll_idea}</div>
+                            <div class="advice-group">
+                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">collections</span> B-ROLL IDEA</div>
+                                <div class="b-roll-chip"><span class="material-icons-round" style="font-size:14px">movie_filter</span> ${scene.b_roll_idea}</div>
                             </div>` : ''}
 
-                            <div class="advice-box">
-                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">mic</span> トーク / テロップ</div>
-                                <div class="advice-text" style="color:#666;">"${scene.narration_hint}"</div>
+                            <div class="advice-group">
+                                <div class="advice-label"><span class="material-icons-round" style="font-size:16px">mic</span> NARRATION / TEXT</div>
+                                <div class="advice-text" style="color:#718096; font-style:italic;">"${scene.narration_hint}"</div>
                             </div>
 
                             ${scene.location ? `
                             <a href="${mapUrl}" target="_blank" class="map-btn">
-                                <span class="material-icons-round" style="font-size:16px">place</span> ${scene.location}
+                                <span class="material-icons-round" style="font-size:18px">place</span> ${scene.location}
                             </a>` : ''}
                         </div>
                     </div>
@@ -408,7 +488,7 @@
         el.innerText = msg;
         el.style.display = 'block';
         document.getElementById('generateBtn').disabled = false;
-        document.getElementById('btnText').innerText = "構成案を作成";
+        document.getElementById('btnText').innerText = "CREATE PLOT";
         document.getElementById('loader').style.display = 'none';
     }
 </script>
